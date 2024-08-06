@@ -17,7 +17,7 @@ import os
 
 #### CONFIGURATION ####
 epochs = 100
-num_workers = 4
+num_workers = 8
 batch_size = 512
 pin_memory = True
 device = torch.device("cuda" if torch.cuda.is_available() else "mps")
