@@ -18,7 +18,7 @@ import os
 #### CONFIGURATION ####
 epochs = 100
 num_workers = 4
-batch_size = 128
+batch_size = 512
 pin_memory = True
 device = torch.device("cuda" if torch.cuda.is_available() else "mps")
 
@@ -88,7 +88,7 @@ def train():
     train_dataset, _ = load_full_isic(SimSiamAugmentations(), norm_only)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=pin_memory)
 
-    base_encoder, dim = timm.create_model("deit_base_patch16_224", pretrained=False), 768
+    base_encoder, dim = timm.create_model("deit_tiny_patch16_224", pretrained=False), 192
     model = SimSiamWrapper(base_encoder, dim, 512).to(device)
     model.train()
 
