@@ -13,6 +13,7 @@ from dataset import load_full_isic
 import math
 
 import wandb
+import os
 
 #### CONFIGURATION ####
 epochs = 100
@@ -20,6 +21,10 @@ num_workers = 4
 batch_size = 256
 pin_memory = True
 device = torch.device("cuda" if torch.cuda.is_available() else "mps")
+
+# if checkpoints folder does not exist, create it
+if not os.path.exists("checkpoints"):
+    os.makedirs("checkpoints")
 
 def adjust_learning_rate(optimizer, init_lr, epoch, args):
     """Decay the learning rate based on schedule"""
