@@ -1,9 +1,15 @@
-from torch.utils.data import Dataset, WeightedRandomSampler, Subset
+from torch.utils.data import Dataset, WeightedRandomSampler, Subset, DataLoader
 from PIL import Image
 import numpy as np
 import os
 import pandas as pd
 import torch
+
+import medmnist
+from medmnist import INFO
+
+from torchvision.transforms.functional import InterpolationMode
+
 
 # Define the custom dataset
 class ISICDataset(Dataset):
@@ -35,3 +41,37 @@ def load_full_isic(augments, norm_only):
     dataset_knn = ISICDataset(files, labels, transform=norm_only)
 
     return dataset_train, dataset_knn
+
+
+class MedMNIST:
+    def __init__(self, batch_size, name, train_augs, norm_augs, seed=42):
+        self.batch_size = batch_size
+        self.seed = seed
+        self.name = name
+        self.as_rgb = True
+        self.train_augs = train_augs
+        self.norm_augs = norm_augs
+
+    def get_loaders(self):
+        info = INFO[self.name]
+        DataClass = getattr(medmnist, info["python_class"])
+
+        train_dataset = DataClass(
+            split="train", transform=self.train_augs, download=True, as_rgb=self.as_rgb, size=224
+        )
+        val_dataset = DataClass(
+            split="val", transform=self.norm_augs, download=True, as_rgb=self.as_rgb, size=224
+        )
+        test_dataset = DataClass(
+            split="test", transform=self.norm_augs, download=True, as_rgb=self.as_rgb, size=224
+        )
+
+        train_loader = DataLoader(
+            train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=8, pin_memory=True
+        )
+        val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=8)
+        test_loader = DataLoader(
+            test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=8
+        )
+
+        return train_loader, val_loader, test_loader

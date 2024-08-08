@@ -8,17 +8,52 @@ from tqdm import tqdm
 import torch
 import torch.nn as nn
 
-from dataset import load_full_isic
+from dataset import load_full_isic, MedMNIST
 
 import math
 
 import wandb
+
 import os
+import numpy as np
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
+
+def compute_knn(backbone, data_loader_train, data_loader_val):
+    device = next(backbone.parameters()).device
+
+    data_loaders = {
+        "train": data_loader_train,
+        "val": data_loader_val,
+    }
+
+    lists = {
+        "X_train": [],
+        "y_train": [],
+        "X_val": [],
+        "y_val": [],
+    }
+
+    for name, data_loader in data_loaders.items():
+        for imgs, y in data_loader:
+            imgs = imgs.to(device)
+            lists[f"X_{name}"].append(backbone(imgs).detach().cpu().numpy())
+            lists[f"y_{name}"].append(y.detach().cpu().numpy())
+
+    arrays = {k: np.concatenate(l) for k,l in lists.items()}
+    
+    estimator = KNeighborsClassifier(8)
+    estimator.fit(arrays["X_train"], arrays["y_train"])
+    y_val_pred = estimator.predict(arrays["X_val"])
+
+    acc = accuracy_score(arrays["y_val"], y_val_pred)
+
+    return acc, y_val_pred
 
 #### CONFIGURATION ####
 epochs = 100
 num_workers = 8
-batch_size = 512
+batch_size = 64
 pin_memory = True
 device = torch.device("cuda" if torch.cuda.is_available() else "mps")
 
@@ -85,8 +120,7 @@ def train():
         Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
-    train_dataset, _ = load_full_isic(SimSiamAugmentations(), norm_only)
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=pin_memory)
+    train_loader, val_loader, _ = MedMNIST(batch_size, "dermamnist", SimSiamAugmentations(), norm_only).get_loaders()
 
     base_encoder, dim = timm.create_model("deit_tiny_patch16_224", pretrained=False), 192
     model = SimSiamWrapper(base_encoder, dim, 512).to(device)
@@ -115,6 +149,8 @@ def train():
                 t.set_postfix(loss=loss.item())
             
             adjust_learning_rate(optimizer, lr, e, epochs)
+            compute_knn(model.encoder, train_loader, val_loader)
+            
 
         torch.save(model.encoder.state_dict(), f"checkpoints/model_{e}.pt")
 
