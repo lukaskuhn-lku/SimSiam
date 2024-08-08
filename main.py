@@ -127,6 +127,9 @@ def train():
     model = SimSiamWrapper(base_encoder, dim, 512).to(device)
     model.train()
 
+    acc, _ = compute_knn(model.encoder, train_norm_loader, val_loader)
+    wandb.log({"knn_acc": acc})
+
     criterion = nn.CosineSimilarity(dim=1).to(device)
     lr = 0.05 * batch_size / 256
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
