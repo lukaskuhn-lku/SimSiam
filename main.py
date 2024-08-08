@@ -111,8 +111,8 @@ class SimSiamWrapper(nn.Module):
 
 def train():
     wandb.init(
-        project="SimSiam ISIC",
-        tags=["simsiam", "isic", "vit"],
+        project="SimSiam MedMNISt",
+        tags=["simsiam", "medmnist", "vit"],
     )
 
     norm_only = Compose([
