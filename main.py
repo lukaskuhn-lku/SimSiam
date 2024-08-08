@@ -43,7 +43,7 @@ def compute_knn(backbone, data_loader_train, data_loader_val):
 
     arrays = {k: np.concatenate(l) for k,l in lists.items()}
     
-    estimator = KNeighborsClassifier(8)
+    estimator = KNeighborsClassifier(100)
     estimator.fit(arrays["X_train"], arrays["y_train"])
     y_val_pred = estimator.predict(arrays["X_val"])
 
