@@ -36,7 +36,6 @@ def compute_knn(backbone, data_loader_train, data_loader_val):
 
     for name, data_loader in data_loaders.items():
         for imgs, y in data_loader:
-            print(imgs)
             imgs = imgs.to(device)
             lists[f"X_{name}"].append(backbone(imgs).detach().cpu().numpy())
             lists[f"y_{name}"].append(y.detach().cpu().numpy())
@@ -121,7 +120,7 @@ def train():
         Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
-    train_loader, val_loader, _ = MedMNIST(batch_size, "dermamnist", SimSiamAugmentations(), norm_only).get_loaders()
+    train_loader, train_norm_loader, val_loader, _ = MedMNIST(batch_size, "dermamnist", SimSiamAugmentations(), norm_only).get_loaders()
 
     base_encoder, dim = timm.create_model("deit_tiny_patch16_224", pretrained=False), 192
     model = SimSiamWrapper(base_encoder, dim, 512).to(device)
@@ -150,7 +149,7 @@ def train():
                 t.set_postfix(loss=loss.item())
             
             adjust_learning_rate(optimizer, lr, e, epochs)
-            acc, _ = compute_knn(model.encoder, train_loader, val_loader)
+            acc, _ = compute_knn(model.encoder, train_norm_loader, val_loader)
             wandb.log({"knn_acc": acc})
 
             

@@ -59,6 +59,11 @@ class MedMNIST:
         train_dataset = DataClass(
             split="train", transform=self.train_augs, download=True, as_rgb=self.as_rgb, size=224
         )
+        train_norm_dataset = DataClass(
+            split="train", transform=self.norm_augs, download=True, as_rgb=self.as_rgb, size=224
+        )
+
+
         val_dataset = DataClass(
             split="val", transform=self.norm_augs, download=True, as_rgb=self.as_rgb, size=224
         )
@@ -69,9 +74,14 @@ class MedMNIST:
         train_loader = DataLoader(
             train_dataset, batch_size=self.batch_size, shuffle=True, num_workers=8, pin_memory=True
         )
+
+        train_norm_loader = DataLoader(
+            train_norm_dataset, batch_size=self.batch_size, shuffle=False, num_workers=8
+        )
+
         val_loader = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=8)
         test_loader = DataLoader(
             test_dataset, batch_size=self.batch_size, shuffle=False, num_workers=8
         )
 
-        return train_loader, val_loader, test_loader
+        return train_loader, train_norm_loader, val_loader, test_loader
