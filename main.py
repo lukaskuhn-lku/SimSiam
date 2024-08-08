@@ -54,7 +54,7 @@ def compute_knn(backbone, data_loader_train, data_loader_val):
 #### CONFIGURATION ####
 epochs = 100
 num_workers = 8
-batch_size = 256
+batch_size = 128
 pin_memory = True
 device = torch.device("cuda" if torch.cuda.is_available() else "mps")
 
