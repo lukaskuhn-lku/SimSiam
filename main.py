@@ -36,6 +36,7 @@ def compute_knn(backbone, data_loader_train, data_loader_val):
 
     for name, data_loader in data_loaders.items():
         for imgs, y in data_loader:
+            y = y.squeeze()
             imgs = imgs.to(device)
             lists[f"X_{name}"].append(backbone(imgs).detach().cpu().numpy())
             lists[f"y_{name}"].append(y.detach().cpu().numpy())
