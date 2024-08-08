@@ -149,7 +149,9 @@ def train():
                 t.set_postfix(loss=loss.item())
             
             adjust_learning_rate(optimizer, lr, e, epochs)
-            compute_knn(model.encoder, train_loader, val_loader)
+            acc, _ = compute_knn(model.encoder, train_loader, val_loader)
+            wandb.log({"knn_acc": acc})
+
             
 
         torch.save(model.encoder.state_dict(), f"checkpoints/model_{e}.pt")
