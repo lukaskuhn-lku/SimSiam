@@ -123,7 +123,7 @@ def train():
 
     train_loader, train_norm_loader, val_loader, _ = MedMNIST(batch_size, "dermamnist", SimSiamAugmentations(), norm_only).get_loaders()
 
-    base_encoder, dim = timm.create_model("deit_tiny_patch16_224", pretrained=False), 192
+    base_encoder, dim = timm.create_model("deit_base_patch16_224", pretrained=False), 768
     model = SimSiamWrapper(base_encoder, dim, 512).to(device)
     model.train()
 
